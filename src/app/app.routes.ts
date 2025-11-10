@@ -28,6 +28,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/empleado/empleado-list/empleado-list.component').then(m => m.EmpleadoListComponent),
   },
   {
+    path: 'mesa',
+    loadComponent: () => import('./features/mesa/mesa-list/mesa-list.component').then(m => m.MesaListComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },

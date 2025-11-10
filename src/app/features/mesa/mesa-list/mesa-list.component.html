@@ -1,0 +1,79 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h2 class="card-title mb-0">Gestión de Mesas</h2>
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <!-- 🔹 Filtros por capacidad -->
+      <input type="number" class="form-control" style="width: 120px"
+             placeholder="Capacidad mín."
+             [(ngModel)]="filtroMin" (input)="filtrarMesas()">
+
+      <input type="number" class="form-control" style="width: 120px"
+             placeholder="Capacidad máx."
+             [(ngModel)]="filtroMax" (input)="filtrarMesas()">
+      <button class="btn btn-outline-secondary" (click)="filtroMin=null; filtroMax=null; filtrarMesas()">Limpiar Filtro</button>
+      <button class="btn btn-success" (click)="openModal()">Nueva Mesa</button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Capacidad</th>
+            <th>Fecha Registro</th>
+            <th>Última Actualización</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading"><td colspan="5" class="text-center">Cargando...</td></tr>
+          <tr *ngIf="!loading && paginatedMesas.length === 0"><td colspan="5" class="text-center">No hay mesas que cumplan el filtro</td></tr>
+          <tr *ngFor="let mesa of paginatedMesas">
+            <td>{{ mesa.id }}</td>
+            <td>{{ mesa.capacidad }}</td>
+            <td>{{ mesa.fecha_registro | date:'short' }}</td>
+            <td>{{ mesa.fecha_actualizacion ? (mesa.fecha_actualizacion | date:'short') : '-' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="openModal(mesa)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteMesa(mesa)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 🔹 Paginación -->
+    <div class="pagination mt-3" *ngIf="totalPages > 1">
+      <button class="btn btn-secondary" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
+      <span class="mx-3">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button class="btn btn-secondary" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- 🔹 Modal -->
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingMesa ? 'Editar Mesa' : 'Nueva Mesa' }}</h5>
+          <button type="button" class="close" (click)="closeModal()"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="mesaForm" (ngSubmit)="saveMesa()">
+            <div class="form-group mb-3">
+              <label>Capacidad *</label>
+              <input type="number" class="form-control" formControlName="capacidad" min="1">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="saveMesa()">{{ editingMesa ? 'Actualizar' : 'Crear' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
