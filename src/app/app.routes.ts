@@ -16,16 +16,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/categoria/categoria-list/categoria-list.component').then(m => m.CategoriaListComponent),
   },
   {
-    path: 'productos',
-    loadComponent: () => import('./features/producto/producto-list/producto-list.component').then(m => m.ProductoListComponent),
-  },
-  {
     path: 'usuarios',
     loadComponent: () => import('./features/usuario/usuario-list/usuario-list.component').then(m => m.UsuarioListComponent),
   },
   {
   path: 'cliente',
   loadComponent: () => import('./features/cliente/cliente-list/cliente-list.component').then(m => m.ClienteListComponent)
+  },
+  {
+    path: 'empleado',
+    loadComponent: () => import('./features/empleado/empleado-list/empleado-list.component').then(m => m.EmpleadoListComponent),
   },
   {
     path: 'auth',
