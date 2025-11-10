@@ -1,217 +1,115 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PaginationParams } from '../../../core/models/api-response.model';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { UsuarioService } from '../../../core/services/usuario.service';
-import { CreateUsuarioRequest, UpdateUsuarioRequest, Usuario, UsuarioFilters } from '../../../shared/models/usuario.model';
+import { Usuario } from '../../../shared/models/usuario.model';
 
 @Component({
   selector: 'app-usuario-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './usuario-list.component.html',
-  styleUrl: './usuario-list.component.scss'
+  styleUrls: ['./usuario-list.component.scss']
 })
 export class UsuarioListComponent implements OnInit {
   usuarios: Usuario[] = [];
-  loading = false;
-  currentPage = 1;
-  totalPages = 1;
-  pageSize = 10;
-  
-  filters: UsuarioFilters = {};
-  
-  // Modal properties
+  usuariosFiltrados: Usuario[] = [];
+  usuarioForm!: FormGroup;
   showModal = false;
   editingUsuario: Usuario | null = null;
-  usuarioForm: FormGroup;
+  filtro: string = '';
+  loading = false;
 
   constructor(
     private usuarioService: UsuarioService,
     private fb: FormBuilder
-  ) {
-    this.usuarioForm = this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
-      nombre_usuario: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      telefono: [''],
-      contraseña: [''],
-      es_admin: [false]
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
+    this.initForm();
     this.loadUsuarios();
+  }
+
+  initForm(): void {
+    this.usuarioForm = this.fb.group({
+      nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      contraseña: ['', Validators.required],
+    });
   }
 
   loadUsuarios(): void {
     this.loading = true;
-    const pagination: PaginationParams = {
-      page: this.currentPage,
-      limit: this.pageSize
-    };
-
-    this.usuarioService.getUsuarios(pagination, this.filters).subscribe({
-      next: (usuarios) => {
-        this.usuarios = usuarios;
+    this.usuarioService.getUsuarios().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        this.usuariosFiltrados = [...this.usuarios];
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error al cargar usuarios:', error);
-        // Si el backend no está disponible, usar datos mock
-        if (error.status === 0 || error.status === undefined) {
-          console.log('Backend no disponible, usando datos mock para usuarios');
-          this.usuarios = [{
-            id: '1',
-            nombre: 'Administrador',
-            nombre_usuario: 'admin',
-            email: 'admin@itm.edu.co',
-            telefono: '',
-            activo: true,
-            es_admin: true,
-            fecha_creacion: new Date().toISOString(),
-            fecha_edicion: new Date().toISOString()
-          }];
-          this.totalPages = 1;
-        }
+      error: (err) => {
+        console.error('Error al obtener usuarios:', err);
         this.loading = false;
       }
     });
   }
 
-  onFilterChange(): void {
-    this.currentPage = 1;
-    this.loadUsuarios();
-  }
-
-  clearFilters(): void {
-    this.filters = {};
-    this.currentPage = 1;
-    this.loadUsuarios();
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loadUsuarios();
+  filtrarUsuarios(): void {
+    const term = this.filtro.toLowerCase().trim();
+    if (!term) {
+      this.usuariosFiltrados = [...this.usuarios];
+      return;
     }
+    this.usuariosFiltrados = this.usuarios.filter(usuario =>
+      usuario.nombre.toLowerCase().includes(term) ||
+      usuario.apellido.toLowerCase().includes(term)
+    );
   }
 
-  openCreateModal(): void {
-    this.editingUsuario = null;
-    this.usuarioForm.reset({
-      nombre: '',
-      nombre_usuario: '',
-      email: '',
-      telefono: '',
-      contraseña: '',
-      es_admin: false
-    });
+  openModal(usuario?: Usuario): void {
     this.showModal = true;
-  }
-
-  editUsuario(usuario: Usuario): void {
-    this.editingUsuario = usuario;
-    this.usuarioForm.patchValue({
-      nombre: usuario.nombre,
-      nombre_usuario: usuario.nombre_usuario,
-      email: usuario.email,
-      telefono: usuario.telefono || '',
-      contraseña: '',
-      es_admin: usuario.es_admin
-    });
-    this.showModal = true;
+    if (usuario) {
+      this.editingUsuario = usuario;
+      this.usuarioForm.patchValue(usuario);
+    } else {
+      this.editingUsuario = null;
+      this.usuarioForm.reset();
+    }
   }
 
   closeModal(): void {
     this.showModal = false;
-    this.editingUsuario = null;
     this.usuarioForm.reset();
   }
 
   saveUsuario(): void {
-    if (this.usuarioForm.invalid) {
-      this.usuarioForm.markAllAsTouched();
-      return;
-    }
-
-    if (!this.editingUsuario && !this.usuarioForm.get('contraseña')?.value) {
-      alert('La contraseña es requerida para nuevos usuarios');
-      return;
-    }
-
-    const formValue = this.usuarioForm.value;
+    if (this.usuarioForm.invalid) return;
+    const data = this.usuarioForm.value;
 
     if (this.editingUsuario) {
-      // Actualizar usuario existente
-      const updateData: UpdateUsuarioRequest = {
-        nombre: formValue.nombre,
-        nombre_usuario: formValue.nombre_usuario,
-        email: formValue.email,
-        telefono: formValue.telefono,
-        es_admin: formValue.es_admin
-      };
-      
-      this.usuarioService.updateUsuario(this.editingUsuario.id, updateData).subscribe({
+      this.usuarioService.updateUsuario(this.editingUsuario.id, data).subscribe({
         next: () => {
           this.loadUsuarios();
           this.closeModal();
         },
-        error: (error) => {
-          console.error('Error al actualizar usuario:', error);
-          alert('Error al actualizar el usuario');
-        }
+        error: err => console.error('Error al editar usuario:', err)
       });
     } else {
-      // Crear nuevo usuario
-      const newUsuario: CreateUsuarioRequest = {
-        nombre: formValue.nombre,
-        nombre_usuario: formValue.nombre_usuario,
-        email: formValue.email,
-        telefono: formValue.telefono,
-        contraseña: formValue.contraseña,
-        password: formValue.contraseña, // Alias for frontend compatibility
-        apellido: formValue.apellido || '', // Add missing field
-        es_admin: formValue.es_admin
-      };
-      
-      this.usuarioService.createUsuario(newUsuario).subscribe({
+      this.usuarioService.createUsuario(data).subscribe({
         next: () => {
           this.loadUsuarios();
           this.closeModal();
         },
-        error: (error) => {
-          console.error('Error al crear usuario:', error);
-          alert('Error al crear el usuario');
-        }
+        error: err => console.error('Error al crear usuario:', err)
       });
     }
   }
 
   deleteUsuario(usuario: Usuario): void {
-    if (confirm(`¿Está seguro de eliminar el usuario "${usuario.email}"?`)) {
+    if (confirm(`¿Eliminar al usuario "${usuario.nombre} ${usuario.apellido}"?`)) {
       this.usuarioService.deleteUsuario(usuario.id).subscribe({
-        next: () => {
-          this.loadUsuarios();
-        },
-        error: (error) => {
-          console.error('Error al eliminar usuario:', error);
-          alert('Error al eliminar el usuario');
-        }
-      });
-    }
-  }
-
-  desactivarUsuario(usuario: Usuario): void {
-    if (confirm(`¿Está seguro de desactivar el usuario "${usuario.email}"?`)) {
-      this.usuarioService.desactivarUsuario(usuario.id).subscribe({
-        next: () => {
-          this.loadUsuarios();
-        },
-        error: (error) => {
-          console.error('Error al desactivar usuario:', error);
-          alert('Error al desactivar el usuario');
-        }
+        next: () => this.loadUsuarios(),
+        error: err => console.error('Error al eliminar usuario:', err)
       });
     }
   }

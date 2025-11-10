@@ -431,11 +431,7 @@ export class LoginComponent implements OnInit {
         this.notificationService.showSuccess('Inicio de sesión exitoso');
         
         // Redirigir según el rol
-        if (response.nombre_usuario.es_admin) {
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.router.navigate(['/productos']);
-        }
+      this.router.navigate(['/dashboard']);
         this.loading = false;
       },
       error: (error) => {
@@ -454,26 +450,25 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  loginMock(): void {
-    // Login mock para cuando el backend no está disponible
-    const mockResponse = {
-      clave: 'mock_token_' + Date.now(),
-      nombre_usuario: {
-        id: '1',
-        nombre: 'Administrador',
-        nombre_usuario: 'admin',
-        email: 'admin@itm.edu.co',
-        telefono: '',
-        activo: true,
-        es_admin: true,
-        fecha_creacion: new Date().toISOString(),
-        fecha_edicion: new Date().toISOString()
-      }
-    };
-    
-    console.log('Usando login mock:', mockResponse);
-    this.authService.setUserData(mockResponse);
-    this.notificationService.showSuccess('Inicio de sesión exitoso (modo demo)');
+loginMock(): void {
+  const mockResponse = {
+    clave: 'mock_token_' + Date.now(),
+    nombre_usuario: {
+      id: '1',
+      nombre: 'Administrador',
+      apellido: 'Demo',
+      email: 'admin@demo.com',
+      contraseña: 'admin123'
+    }
+  };
+  
+  console.log('Usando login mock:', mockResponse);
+  this.authService.setUserData(mockResponse);
+  this.notificationService.showSuccess('Inicio de sesión exitoso (modo demo)');
+  
+  this.router.navigate(['/dashboard']);
+  this.loading = false;
+
     
     // Verificar que los datos se guardaron en localStorage
     console.log('Verificando localStorage después del login:');
@@ -484,5 +479,4 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/dashboard']);
     this.loading = false;
   }
-
 }
