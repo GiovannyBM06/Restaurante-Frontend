@@ -1,56 +1,34 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Categoria, CategoriaFilters, CreateCategoriaRequest, UpdateCategoriaRequest } from '../../shared/models/categoria.model';
-import { PaginationParams } from '../models/api-response.model';
-import { ApiService } from './api.service';
+import { environment } from '../../../environments/environment';
+import { Categoria } from '../../shared/models/categoria.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoriaService {
-  private readonly endpoint = '/categorias';
+  private apiUrl = `${environment.apiUrl}/categorias`;
 
-  constructor(private apiService: ApiService) { }
+  constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene todas las categorías con paginación
-   */
-  getCategorias(pagination: PaginationParams, filters?: CategoriaFilters): Observable<Categoria[]> {
-    return this.apiService.getPaginated<Categoria>(this.endpoint, pagination, filters);
+  getCategorias(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(this.apiUrl);
   }
 
-  /**
-   * Obtiene una categoría por ID
-   */
-  getCategoriaById(id: string): Observable<Categoria> {
-    return this.apiService.get<Categoria>(`${this.endpoint}/${id}`);
+  getCategoria(id: string): Observable<Categoria> {
+    return this.http.get<Categoria>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * Crea una nueva categoría
-   */
-  createCategoria(categoria: CreateCategoriaRequest): Observable<Categoria> {
-    return this.apiService.post<Categoria>(this.endpoint, categoria);
+  createCategoria(categoria: Partial<Categoria>): Observable<Categoria> {
+    return this.http.post<Categoria>(this.apiUrl, categoria);
   }
 
-  /**
-   * Actualiza una categoría existente
-   */
-  updateCategoria(id: string, categoria: UpdateCategoriaRequest): Observable<Categoria> {
-    return this.apiService.put<Categoria>(`${this.endpoint}/${id}`, categoria);
+  updateCategoria(id: string, categoria: Partial<Categoria>): Observable<Categoria> {
+    return this.http.put<Categoria>(`${this.apiUrl}/${id}`, categoria);
   }
 
-  /**
-   * Elimina una categoría
-   */
   deleteCategoria(id: string): Observable<any> {
-    return this.apiService.delete<any>(`${this.endpoint}/${id}`);
-  }
-
-  /**
-   * Obtiene una categoría por nombre
-   */
-  getCategoriaByNombre(nombre: string): Observable<Categoria> {
-    return this.apiService.get<Categoria>(`${this.endpoint}/nombre/${nombre}`);
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }

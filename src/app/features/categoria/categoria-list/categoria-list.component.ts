@@ -1,179 +1,158 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { PaginationParams } from '../../../core/models/api-response.model';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CategoriaService } from '../../../core/services/categoria.service';
-import { Categoria, CategoriaFilters } from '../../../shared/models/categoria.model';
+import { Categoria } from '../../../shared/models/categoria.model';
 
 @Component({
   selector: 'app-categoria-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  providers: [DatePipe],
   templateUrl: './categoria-list.component.html',
-  styleUrl: './categoria-list.component.scss'
+  styleUrls: ['./categoria-list.component.scss']
 })
 export class CategoriaListComponent implements OnInit {
   categorias: Categoria[] = [];
-  loading = false;
-  currentPage = 1;
-  totalPages = 1;
-  pageSize = 10;
-  
-  filters: CategoriaFilters = {};
-  
-  // Modal properties
-  showModal = false;
-  editingCategoria: Categoria | null = null;
-  categoriaForm = {
-    nombre: '',
-    descripcion: '',
-    activa: true
-  };
+  categoriasFiltradas: Categoria[] = [];
+  categoriaForm!: FormGroup;
 
-  constructor(private categoriaService: CategoriaService) { }
+  loading = false;
+  showModal = false;               // controla la visibilidad del modal
+  editingCategoria: Categoria | null = null;
+
+  searchTerm = '';
+
+  constructor(
+    private fb: FormBuilder,
+    private categoriaService: CategoriaService
+  ) {}
 
   ngOnInit(): void {
+    this.initForm();
     this.loadCategorias();
+  }
+
+  initForm(): void {
+    this.categoriaForm = this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      descripcion: ['']
+    });
   }
 
   loadCategorias(): void {
     this.loading = true;
-    const pagination: PaginationParams = {
-      page: this.currentPage,
-      limit: this.pageSize
-    };
-
-    this.categoriaService.getCategorias(pagination, this.filters).subscribe({
-      next: (categorias) => {
-        this.categorias = categorias;
-        // Since backend doesn't provide pagination info, we'll set a default
-        this.totalPages = Math.ceil(categorias.length / this.pageSize);
+    this.categoriaService.getCategorias().subscribe({
+      next: (data) => {
+        this.categorias = data;
+        this.categoriasFiltradas = [...this.categorias];
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Error al cargar categorías:', error);
-        // Si el backend no está disponible, usar datos mock
-        if (error.status === 0 || error.status === undefined) {
-          console.log('Backend no disponible, usando datos mock para categorías');
-          this.categorias = [{
-            id_categoria: '1',
-            id: '1',
-            nombre: 'Tecnología',
-            descripcion: 'Categoría para productos tecnológicos',
-            activa: true,
-            fecha_creacion: new Date().toISOString(),
-            fecha_edicion: new Date().toISOString()
-          }];
-          this.totalPages = 1;
-        }
+      error: (err) => {
+        console.error('Error al obtener categorias', err);
         this.loading = false;
       }
     });
   }
 
-  onFilterChange(): void {
-    this.currentPage = 1;
-    this.loadCategorias();
-  }
-
-  clearFilters(): void {
-    this.filters = {};
-    this.currentPage = 1;
-    this.loadCategorias();
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loadCategorias();
+  filtrarCategorias(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      this.categoriasFiltradas = [...this.categorias];
+      return;
     }
+    this.categoriasFiltradas = this.categorias.filter(c =>
+      c.nombre.toLowerCase().includes(term)
+    );
   }
 
+  // Abrir modal para crear
   openCreateModal(): void {
+    console.log('openCreateModal()');
     this.editingCategoria = null;
-    this.categoriaForm = {
-      nombre: '',
-      descripcion: '',
-      activa: true
-    };
+    this.categoriaForm.reset({ nombre: '', descripcion: '' });
     this.showModal = true;
+    // enfocamos el campo nombre después de un tick si quieres (opcional)
+    setTimeout(() => {
+      const el = document.getElementById('categoria-nombre') as HTMLInputElement | null;
+      el?.focus();
+    });
   }
 
+  // Abrir modal para editar
   editCategoria(categoria: Categoria): void {
+    console.log('editCategoria()', categoria);
     this.editingCategoria = categoria;
-    this.categoriaForm = {
+    this.categoriaForm.patchValue({
       nombre: categoria.nombre,
-      descripcion: categoria.descripcion || '',
-      activa: categoria.activa
-    };
+      descripcion: categoria.descripcion || ''
+    });
     this.showModal = true;
+    setTimeout(() => {
+      const el = document.getElementById('categoria-nombre') as HTMLInputElement | null;
+      el?.focus();
+    });
   }
 
+  // Cerrar modal
   closeModal(): void {
     this.showModal = false;
     this.editingCategoria = null;
-    this.categoriaForm = {
-      nombre: '',
-      descripcion: '',
-      activa: true
-    };
+    this.categoriaForm.reset();
   }
 
+  // Guardar (crear o actualizar)
   saveCategoria(): void {
-    if (!this.categoriaForm.nombre.trim()) {
-      alert('El nombre es requerido');
+    if (this.categoriaForm.invalid) {
+      this.categoriaForm.markAllAsTouched();
       return;
     }
 
+    const payload = this.categoriaForm.value;
+
     if (this.editingCategoria) {
-      // Actualizar categoría existente
-      const updateData = {
-        nombre: this.categoriaForm.nombre,
-        descripcion: this.categoriaForm.descripcion,
-        activa: this.categoriaForm.activa
-      };
-      
-      this.categoriaService.updateCategoria(this.editingCategoria.id, updateData).subscribe({
-        next: () => {
+      // actualizar
+      this.categoriaService.updateCategoria(this.editingCategoria.id, payload).subscribe({
+        next: (updated) => {
           this.loadCategorias();
           this.closeModal();
         },
-        error: (error) => {
-          console.error('Error al actualizar categoría:', error);
-          alert('Error al actualizar la categoría');
+        error: (err) => {
+          console.error('Error actualizando categoría', err);
         }
       });
     } else {
-      // Crear nueva categoría
-      const newCategoria = {
-        nombre: this.categoriaForm.nombre,
-        descripcion: this.categoriaForm.descripcion,
-        activa: this.categoriaForm.activa
+      // crear (ajusta id_usuario según tu auth)
+      const crearPayload = {
+        ...payload,
+        id_usuario: payload.id_usuario || '00000000-0000-0000-0000-000000000001'
       };
-      
-      this.categoriaService.createCategoria(newCategoria).subscribe({
-        next: () => {
+      this.categoriaService.createCategoria(crearPayload).subscribe({
+        next: (created) => {
           this.loadCategorias();
           this.closeModal();
         },
-        error: (error) => {
-          console.error('Error al crear categoría:', error);
-          alert('Error al crear la categoría');
+        error: (err) => {
+          console.error('Error creando categoría', err);
         }
       });
     }
   }
 
+  // Eliminar
   deleteCategoria(categoria: Categoria): void {
-    if (confirm(`¿Está seguro de eliminar la categoría "${categoria.nombre}"?`)) {
-      this.categoriaService.deleteCategoria(categoria.id).subscribe({
-        next: () => {
-          this.loadCategorias();
-        },
-        error: (error) => {
-          console.error('Error al eliminar categoría:', error);
-        }
-      });
+    if (!confirm(`¿Eliminar categoría "${categoria.nombre}"?`)) return;
+    this.categoriaService.deleteCategoria(categoria.id).subscribe({
+      next: (res) => this.loadCategorias(),
+      error: (err) => console.error('Error eliminando categoría', err)
+    });
+  }
+
+  // Cerrar modal al clickear backdrop
+  onBackdropClick(event: MouseEvent): void {
+    // si el click fue en el overlay (no en el contenido)
+    if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
+      this.closeModal();
     }
   }
 }

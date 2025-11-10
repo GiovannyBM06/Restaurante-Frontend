@@ -13,20 +13,6 @@ export interface LoginResponse {
   nombre_usuario: Usuario;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  nombre: string;
-  nombre_usuario: string;
-  telefono?: string;
-  activo: boolean;
-  es_admin: boolean;
-  fecha_creacion: string;
-  fecha_edicion?: string;
-}
-
-export type UserRole = 'admin' | 'consumidor';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -34,8 +20,8 @@ export class AuthService {
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'user_data';
   private readonly ROLE_KEY = 'user_role';
-  
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+
+  private currentUserSubject = new BehaviorSubject<Usuario | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private apiService: ApiService) {
@@ -98,7 +84,7 @@ export class AuthService {
   /**
    * Obtiene el usuario actual
    */
-  getCurrentUser(): User | null {
+  getCurrentUser(): Usuario | null {
     return this.currentUserSubject.value;
   }
 
@@ -109,11 +95,12 @@ export class AuthService {
     console.log('AuthService: Guardando datos del usuario:', loginResponse);
     localStorage.setItem(this.TOKEN_KEY, loginResponse.clave);
     localStorage.setItem(this.USER_KEY, JSON.stringify(loginResponse.nombre_usuario));
-    localStorage.setItem(this.ROLE_KEY, loginResponse.nombre_usuario.es_admin ? 'admin' : 'consumidor');
+
+    // Si el backend no tiene roles, asumimos un rol genérico
+    localStorage.setItem(this.ROLE_KEY, 'usuario');
+
     this.currentUserSubject.next(loginResponse.nombre_usuario);
     console.log('AuthService: Datos guardados en localStorage');
-    console.log('Token:', localStorage.getItem(this.TOKEN_KEY));
-    console.log('Usuario:', localStorage.getItem(this.USER_KEY));
   }
 
   /**
@@ -123,7 +110,7 @@ export class AuthService {
     const userData = localStorage.getItem(this.USER_KEY);
     if (userData) {
       try {
-        const user = JSON.parse(userData);
+        const user: Usuario = JSON.parse(userData);
         this.currentUserSubject.next(user);
       } catch (error) {
         console.error('Error al cargar datos del usuario:', error);
@@ -133,34 +120,10 @@ export class AuthService {
   }
 
   /**
-   * Obtiene el rol del usuario actual
+   * Obtiene el rol del usuario actual (por ahora genérico)
    */
-  getUserRole(): UserRole | null {
-    const user = this.getCurrentUser();
-    return user?.es_admin ? 'admin' : 'consumidor';
-  }
-
-  /**
-   * Verifica si el usuario tiene un rol específico
-   */
-  hasRole(role: UserRole): boolean {
-    return this.getUserRole() === role;
-  }
-
-  /**
-   * Verifica si el usuario es administrador
-   */
-  isAdmin(): boolean {
-    const user = this.getCurrentUser();
-    return user?.es_admin || false;
-  }
-
-  /**
-   * Verifica si el usuario es consumidor
-   */
-  isConsumidor(): boolean {
-    const user = this.getCurrentUser();
-    return !user?.es_admin;
+  getUserRole(): string | null {
+    return localStorage.getItem(this.ROLE_KEY);
   }
 
   /**
@@ -168,15 +131,12 @@ export class AuthService {
    */
   canAccess(route: string): boolean {
     const role = this.getUserRole();
-    
+
     if (!role) return false;
 
-    // Admin puede acceder a todo
-    if (role === 'admin') return true;
-
-    // Consumidor solo puede acceder a productos
-    if (role === 'consumidor') {
-      return route === 'productos' || route === 'dashboard';
+    // Usuario básico: acceso limitado
+    if (role === 'usuario') {
+      return ['dashboard', 'productos', 'categorias'].includes(route);
     }
 
     return false;

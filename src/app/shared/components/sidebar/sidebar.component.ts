@@ -12,20 +12,10 @@ declare interface RouteInfo {
 }
 
 export const ROUTES: RouteInfo[] = [
-  { path: '/dashboard', title: 'Dashboard', icon: 'design_app', class: '' }, 
-  { path: '/pruebas', title: 'Pruebas',  icon: 'shopping_box', class: '' },
-  { path: '/categorias', title: 'Categorías', icon:'design_app', class: '', roles: ['admin'] },
+  { path: '/dashboard', title: 'Dashboard', icon: 'design_app', class: '' },
+  { path: '/categoria', title: 'Categorías', icon:'design_app', class: '', roles: ['admin'] },
   { path: '/usuarios', title: 'Usuarios', icon:'design_app', class: '', roles: ['admin'] },
-  { path: '/clientes', title: 'Clientes', icon: 'design_app', class: '' },
-  { path: '/empleados', title: 'Empleados', icon: 'design_app', class: '', roles: ['admin'] },
-  { path: '/facturas', title: 'Facturas', icon: 'design_app', class: '', roles: ['admin'] },
-  { path: '/mesas', title: 'Mesas', icon: 'design_app', class: '' },
-  { path: '/ordenes', title: 'Órdenes', icon: 'design_app', class: '' },
-  { path: '/platos', title: 'Platos', icon: 'design_app', class: '' },
-  { path: '/plato-orden', title: 'Plato-orden', icon: 'design_app', class: '', roles: ['admin'] },
-  { path: '/reservas', title: 'Reservas', icon: 'design_app', class: '' },
 ];
-
 
 @Component({
   selector: 'app-sidebar',
@@ -43,23 +33,7 @@ export class SidebarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Mostrar todo mientras desarrollas
     this.menuItems = ROUTES;
-
-    // En producción podrías usar:
-    // this.menuItems = ROUTES.filter(menuItem => this.canAccessMenuItem(menuItem));
-  }
-
-  canAccessMenuItem(menuItem: RouteInfo): boolean {
-    if (!menuItem.roles || menuItem.roles.length === 0) {
-      return true;
-    }
-    const userRole = this.authService.getUserRole();
-    return userRole ? menuItem.roles.includes(userRole) : false;
-  }
-
-  isMobileMenu() {
-    return window.innerWidth <= 991;
   }
 
   logout() {
