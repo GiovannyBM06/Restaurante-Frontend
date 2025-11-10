@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { Categoria } from '../../../shared/models/categoria.model';
@@ -8,7 +8,6 @@ import { Categoria } from '../../../shared/models/categoria.model';
   selector: 'app-categoria-list',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  providers: [DatePipe],
   templateUrl: './categoria-list.component.html',
   styleUrls: ['./categoria-list.component.scss']
 })
@@ -18,10 +17,14 @@ export class CategoriaListComponent implements OnInit {
   categoriaForm!: FormGroup;
 
   loading = false;
-  showModal = false;               // controla la visibilidad del modal
+  showModal = false;
   editingCategoria: Categoria | null = null;
-
   searchTerm = '';
+
+  // 🔹 Paginación
+  currentPage = 1;
+  pageSize = 5; // cantidad de categorías por página
+  totalPages = 1;
 
   constructor(
     private fb: FormBuilder,
@@ -45,11 +48,11 @@ export class CategoriaListComponent implements OnInit {
     this.categoriaService.getCategorias().subscribe({
       next: (data) => {
         this.categorias = data;
-        this.categoriasFiltradas = [...this.categorias];
+        this.filtrarCategorias();
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error al obtener categorias', err);
+        console.error('Error al obtener categorías', err);
         this.loading = false;
       }
     });
@@ -59,49 +62,54 @@ export class CategoriaListComponent implements OnInit {
     const term = this.searchTerm.toLowerCase().trim();
     if (!term) {
       this.categoriasFiltradas = [...this.categorias];
-      return;
+    } else {
+      this.categoriasFiltradas = this.categorias.filter(c =>
+        c.nombre.toLowerCase().includes(term)
+      );
     }
-    this.categoriasFiltradas = this.categorias.filter(c =>
-      c.nombre.toLowerCase().includes(term)
-    );
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
-  // Abrir modal para crear
+  // 🔹 Actualiza total de páginas
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.categoriasFiltradas.length / this.pageSize);
+  }
+
+  // 🔹 Cambiar página
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  // 🔹 Categorías visibles en la página actual
+  get paginatedCategorias(): Categoria[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.categoriasFiltradas.slice(start, end);
+  }
+
   openCreateModal(): void {
-    console.log('openCreateModal()');
     this.editingCategoria = null;
     this.categoriaForm.reset({ nombre: '', descripcion: '' });
     this.showModal = true;
-    // enfocamos el campo nombre después de un tick si quieres (opcional)
-    setTimeout(() => {
-      const el = document.getElementById('categoria-nombre') as HTMLInputElement | null;
-      el?.focus();
-    });
   }
 
-  // Abrir modal para editar
   editCategoria(categoria: Categoria): void {
-    console.log('editCategoria()', categoria);
     this.editingCategoria = categoria;
     this.categoriaForm.patchValue({
       nombre: categoria.nombre,
       descripcion: categoria.descripcion || ''
     });
     this.showModal = true;
-    setTimeout(() => {
-      const el = document.getElementById('categoria-nombre') as HTMLInputElement | null;
-      el?.focus();
-    });
   }
 
-  // Cerrar modal
   closeModal(): void {
     this.showModal = false;
     this.editingCategoria = null;
     this.categoriaForm.reset();
   }
 
-  // Guardar (crear o actualizar)
   saveCategoria(): void {
     if (this.categoriaForm.invalid) {
       this.categoriaForm.markAllAsTouched();
@@ -111,48 +119,33 @@ export class CategoriaListComponent implements OnInit {
     const payload = this.categoriaForm.value;
 
     if (this.editingCategoria) {
-      // actualizar
       this.categoriaService.updateCategoria(this.editingCategoria.id, payload).subscribe({
-        next: (updated) => {
+        next: () => {
           this.loadCategorias();
           this.closeModal();
         },
-        error: (err) => {
-          console.error('Error actualizando categoría', err);
-        }
+        error: (err) => console.error('Error actualizando categoría', err)
       });
     } else {
-      // crear (ajusta id_usuario según tu auth)
       const crearPayload = {
         ...payload,
-        id_usuario: payload.id_usuario || '00000000-0000-0000-0000-000000000001'
+        id_usuario: '03df7fd7-27c4-42dd-b44d-299a5069de36'
       };
       this.categoriaService.createCategoria(crearPayload).subscribe({
-        next: (created) => {
+        next: () => {
           this.loadCategorias();
           this.closeModal();
         },
-        error: (err) => {
-          console.error('Error creando categoría', err);
-        }
+        error: (err) => console.error('Error creando categoría', err)
       });
     }
   }
 
-  // Eliminar
   deleteCategoria(categoria: Categoria): void {
     if (!confirm(`¿Eliminar categoría "${categoria.nombre}"?`)) return;
     this.categoriaService.deleteCategoria(categoria.id).subscribe({
-      next: (res) => this.loadCategorias(),
+      next: () => this.loadCategorias(),
       error: (err) => console.error('Error eliminando categoría', err)
     });
-  }
-
-  // Cerrar modal al clickear backdrop
-  onBackdropClick(event: MouseEvent): void {
-    // si el click fue en el overlay (no en el contenido)
-    if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
-      this.closeModal();
-    }
   }
 }

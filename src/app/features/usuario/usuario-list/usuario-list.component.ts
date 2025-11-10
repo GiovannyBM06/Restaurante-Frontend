@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../../core/services/usuario.service';
 import { Usuario } from '../../../shared/models/usuario.model';
 
@@ -17,13 +17,15 @@ export class UsuarioListComponent implements OnInit {
   usuarioForm!: FormGroup;
   showModal = false;
   editingUsuario: Usuario | null = null;
-  filtro: string = '';
   loading = false;
+  searchTerm = '';
 
-  constructor(
-    private usuarioService: UsuarioService,
-    private fb: FormBuilder
-  ) {}
+  // Paginación
+  currentPage = 1;
+  pageSize = 5;
+  totalPages = 1;
+
+  constructor(private fb: FormBuilder, private usuarioService: UsuarioService) {}
 
   ngOnInit(): void {
     this.initForm();
@@ -35,7 +37,7 @@ export class UsuarioListComponent implements OnInit {
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      contraseña: ['', Validators.required],
+      contraseña: ['', Validators.required]
     });
   }
 
@@ -44,73 +46,92 @@ export class UsuarioListComponent implements OnInit {
     this.usuarioService.getUsuarios().subscribe({
       next: (data) => {
         this.usuarios = data;
-        this.usuariosFiltrados = [...this.usuarios];
+        this.filtrarUsuarios();
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error al obtener usuarios:', err);
+        console.error('Error al obtener usuarios', err);
         this.loading = false;
       }
     });
   }
 
   filtrarUsuarios(): void {
-    const term = this.filtro.toLowerCase().trim();
-    if (!term) {
-      this.usuariosFiltrados = [...this.usuarios];
-      return;
-    }
-    this.usuariosFiltrados = this.usuarios.filter(usuario =>
-      usuario.nombre.toLowerCase().includes(term) ||
-      usuario.apellido.toLowerCase().includes(term)
+    const term = this.searchTerm.toLowerCase().trim();
+    this.usuariosFiltrados = this.usuarios.filter(u =>
+      u.nombre.toLowerCase().includes(term) ||
+      u.apellido.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term)
     );
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
-  openModal(usuario?: Usuario): void {
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.usuariosFiltrados.length / this.pageSize);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  get paginatedUsuarios(): Usuario[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.usuariosFiltrados.slice(start, end);
+  }
+
+  openCreateModal(): void {
+    this.editingUsuario = null;
+    this.usuarioForm.reset();
     this.showModal = true;
-    if (usuario) {
-      this.editingUsuario = usuario;
-      this.usuarioForm.patchValue(usuario);
-    } else {
-      this.editingUsuario = null;
-      this.usuarioForm.reset();
-    }
+  }
+
+  editUsuario(usuario: Usuario): void {
+    this.editingUsuario = usuario;
+    this.usuarioForm.patchValue(usuario);
+    this.showModal = true;
   }
 
   closeModal(): void {
     this.showModal = false;
+    this.editingUsuario = null;
     this.usuarioForm.reset();
   }
 
   saveUsuario(): void {
-    if (this.usuarioForm.invalid) return;
-    const data = this.usuarioForm.value;
+    if (this.usuarioForm.invalid) {
+      this.usuarioForm.markAllAsTouched();
+      return;
+    }
+
+    const payload = this.usuarioForm.value;
 
     if (this.editingUsuario) {
-      this.usuarioService.updateUsuario(this.editingUsuario.id, data).subscribe({
+      this.usuarioService.updateUsuario(this.editingUsuario.id, payload).subscribe({
         next: () => {
           this.loadUsuarios();
           this.closeModal();
         },
-        error: err => console.error('Error al editar usuario:', err)
+        error: (err) => console.error('Error actualizando usuario', err)
       });
     } else {
-      this.usuarioService.createUsuario(data).subscribe({
+      this.usuarioService.createUsuario(payload).subscribe({
         next: () => {
           this.loadUsuarios();
           this.closeModal();
         },
-        error: err => console.error('Error al crear usuario:', err)
+        error: (err) => console.error('Error creando usuario', err)
       });
     }
   }
 
   deleteUsuario(usuario: Usuario): void {
-    if (confirm(`¿Eliminar al usuario "${usuario.nombre} ${usuario.apellido}"?`)) {
-      this.usuarioService.deleteUsuario(usuario.id).subscribe({
-        next: () => this.loadUsuarios(),
-        error: err => console.error('Error al eliminar usuario:', err)
-      });
-    }
+    if (!confirm(`¿Eliminar usuario "${usuario.nombre} ${usuario.apellido}"?`)) return;
+    this.usuarioService.deleteUsuario(usuario.id).subscribe({
+      next: () => this.loadUsuarios(),
+      error: (err) => console.error('Error eliminando usuario', err)
+    });
   }
 }

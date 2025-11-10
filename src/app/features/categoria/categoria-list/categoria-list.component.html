@@ -1,96 +1,104 @@
-<div class="categoria-list">
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h2 class="card-title">Gestión de Categorías</h2>
-
-      <div class="d-flex align-items-center gap-2">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Buscar por nombre..."
-          [(ngModel)]="searchTerm"
-          (input)="filtrarCategorias()"
-          style="width: 240px;"
-        />
-        <!-- type="button" para evitar submits accidentales -->
-        <button type="button" class="btn btn-success" (click)="openCreateModal()">Nueva Categoría</button>
-      </div>
-    </div>
-
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Fecha Registro</th>
-              <th>Última Actualización</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="loading">
-              <td colspan="6" class="text-center">Cargando...</td>
-            </tr>
-            <tr *ngIf="!loading && categoriasFiltradas.length === 0">
-              <td colspan="6" class="text-center">No hay categorías disponibles</td>
-            </tr>
-            <tr *ngFor="let categoria of categoriasFiltradas">
-              <td>{{ categoria.id }}</td>
-              <td>{{ categoria.nombre }}</td>
-              <td>{{ categoria.descripcion || '-' }}</td>
-              <td>{{ categoria.fecha_registro | date:'short' }}</td>
-              <td>{{ categoria.fecha_actualizacion ? (categoria.fecha_actualizacion | date:'short') : '-' }}</td>
-              <td>
-                <button type="button" class="btn btn-sm btn-primary me-1" (click)="editCategoria(categoria)">Editar</button>
-                <button type="button" class="btn btn-sm btn-danger" (click)="deleteCategoria(categoria)">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="card-title mb-0">Gestión de Categorías</h2>
+    <div class="d-flex gap-2">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por nombre..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarCategorias()"
+      >
+      <button class="btn btn-success" (click)="openCreateModal()">Nueva Categoría</button>
     </div>
   </div>
-</div>
 
-<!-- Modal: lo manejamos con Angular (no requiere JS de Bootstrap) -->
-<div
-  class="modal-backdrop"
-  *ngIf="showModal"
-  (click)="onBackdropClick($event)"
-  [style.display]="showModal ? 'block' : 'none'"
-  style="position:fixed; inset:0; z-index:1050;"
->
-  <div class="modal-dialog" role="dialog" style="display:flex; align-items:center; justify-content:center; min-height:100vh; padding:1rem;">
-    <div class="modal-content" style="width:100%; max-width:560px;">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ editingCategoria ? 'Editar Categoría' : 'Nueva Categoría' }}</h5>
-        <button type="button" class="close" (click)="closeModal()">&times;</button>
-      </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Fecha Registro</th>
+            <th>Última Actualización</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="6" class="text-center">Cargando...</td>
+          </tr>
+          <tr *ngIf="!loading && paginatedCategorias.length === 0">
+            <td colspan="6" class="text-center">No hay categorías disponibles</td>
+          </tr>
+          <tr *ngFor="let categoria of paginatedCategorias">
+            <td>{{ categoria.id }}</td>
+            <td>{{ categoria.nombre }}</td>
+            <td>{{ categoria.descripcion || '-' }}</td>
+            <td>{{ categoria.fecha_registro | date:'short' }}</td>
+            <td>{{ categoria.fecha_actualizacion ? (categoria.fecha_actualizacion | date:'short') : '-' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="editCategoria(categoria)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteCategoria(categoria)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <div class="modal-body">
-        <form [formGroup]="categoriaForm" (ngSubmit)="saveCategoria()">
-          <div class="form-group mb-3">
-            <label for="categoria-nombre">Nombre *</label>
-            <input id="categoria-nombre" type="text" class="form-control" formControlName="nombre" placeholder="Ingrese el nombre" />
-            <div *ngIf="categoriaForm.get('nombre')?.invalid && categoriaForm.get('nombre')?.touched" class="text-danger">
-              El nombre es requerido y debe tener al menos 2 caracteres.
+    <!-- 🔹 Paginación -->
+    <div class="pagination mt-3" *ngIf="totalPages > 1">
+      <button 
+        class="btn btn-secondary" 
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+      >
+        Anterior
+      </button>
+      <span class="mx-3">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+      <button 
+        class="btn btn-secondary" 
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingCategoria ? 'Editar Categoría' : 'Nueva Categoría' }}</h5>
+          <button type="button" class="close" (click)="closeModal()">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="categoriaForm" (ngSubmit)="saveCategoria()">
+            <div class="form-group mb-3">
+              <label for="nombre">Nombre *</label>
+              <input type="text" class="form-control" id="nombre" formControlName="nombre" placeholder="Ingrese el nombre">
             </div>
-          </div>
 
-          <div class="form-group mb-3">
-            <label for="categoria-descripcion">Descripción</label>
-            <textarea id="categoria-descripcion" class="form-control" formControlName="descripcion" placeholder="Ingrese la descripción (opcional)"></textarea>
-          </div>
-
-          <!-- botones: type para evitar comportamientos no deseados -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary">{{ editingCategoria ? 'Actualizar' : 'Crear' }}</button>
-          </div>
-        </form>
+            <div class="form-group mb-3">
+              <label for="descripcion">Descripción</label>
+              <textarea class="form-control" id="descripcion" formControlName="descripcion" placeholder="Ingrese una descripción opcional"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="saveCategoria()">
+            {{ editingCategoria ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

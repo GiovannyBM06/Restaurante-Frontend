@@ -1,127 +1,89 @@
-<div class="usuario-list">
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h2 class="card-title mb-0">Gestión de Usuarios</h2>
-      <button class="btn btn-success" (click)="openModal()">Nuevo Usuario</button>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="card-title mb-0">Gestión de Usuarios</h2>
+    <div class="d-flex gap-2">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar usuario..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarUsuarios()"
+      >
+      <button class="btn btn-success" (click)="openCreateModal()">Nuevo Usuario</button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="5" class="text-center">Cargando...</td>
+          </tr>
+          <tr *ngIf="!loading && paginatedUsuarios.length === 0">
+            <td colspan="5" class="text-center">No hay usuarios</td>
+          </tr>
+          <tr *ngFor="let usuario of paginatedUsuarios">
+            <td>{{ usuario.id }}</td>
+            <td>{{ usuario.nombre }}</td>
+            <td>{{ usuario.apellido }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="editUsuario(usuario)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteUsuario(usuario)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <div class="card-body">
-      <!-- Filtro de búsqueda -->
-      <div class="mb-3">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Buscar por nombre o apellido..."
-          [(ngModel)]="filtro"
-          (input)="filtrarUsuarios()"
-        />
-      </div>
+    <div class="pagination mt-3" *ngIf="totalPages > 1">
+      <button class="btn btn-secondary" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
+      <span class="mx-3">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button class="btn btn-secondary" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Siguiente</button>
+    </div>
+  </div>
 
-      <!-- Tabla -->
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Email</th>
-              <th class="text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="loading">
-              <td colspan="5" class="text-center">Cargando...</td>
-            </tr>
-            <tr *ngIf="!loading && usuariosFiltrados.length === 0">
-              <td colspan="5" class="text-center">No hay usuarios disponibles</td>
-            </tr>
-            <tr *ngFor="let usuario of usuariosFiltrados">
-              <td>{{ usuario.id }}</td>
-              <td>{{ usuario.nombre }}</td>
-              <td>{{ usuario.apellido }}</td>
-              <td>{{ usuario.email }}</td>
-              <td class="text-center">
-                <button class="btn btn-sm btn-primary me-1" (click)="openModal(usuario)">Editar</button>
-                <button class="btn btn-sm btn-danger" (click)="deleteUsuario(usuario)">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Modal -->
-      <div
-        class="modal fade"
-        [class.show]="showModal"
-        [style.display]="showModal ? 'block' : 'none'"
-        tabindex="-1"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ editingUsuario ? 'Editar Usuario' : 'Nuevo Usuario' }}</h5>
-              <button type="button" class="close" (click)="closeModal()">
-                <span>&times;</span>
-              </button>
+  <!-- Modal -->
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingUsuario ? 'Editar Usuario' : 'Nuevo Usuario' }}</h5>
+          <button type="button" class="close" (click)="closeModal()"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="usuarioForm" (ngSubmit)="saveUsuario()">
+            <div class="form-group mb-3">
+              <label>Nombre *</label>
+              <input type="text" class="form-control" formControlName="nombre">
             </div>
-
-            <div class="modal-body">
-              <form [formGroup]="usuarioForm">
-                <div class="form-group mb-3">
-                  <label for="nombre">Nombre *</label>
-                  <input
-                    id="nombre"
-                    type="text"
-                    class="form-control"
-                    formControlName="nombre"
-                    placeholder="Ingrese el nombre"
-                  />
-                </div>
-
-                <div class="form-group mb-3">
-                  <label for="apellido">Apellido *</label>
-                  <input
-                    id="apellido"
-                    type="text"
-                    class="form-control"
-                    formControlName="apellido"
-                    placeholder="Ingrese el apellido"
-                  />
-                </div>
-
-                <div class="form-group mb-3">
-                  <label for="email">Email *</label>
-                  <input
-                    id="email"
-                    type="email"
-                    class="form-control"
-                    formControlName="email"
-                    placeholder="Ingrese el email"
-                  />
-                </div>
-
-                <!-- Solo mostrar contraseña al crear -->
-                <div class="form-group mb-3" *ngIf="!editingUsuario">
-                  <label for="contraseña">Contraseña *</label>
-                  <input
-                    id="contraseña"
-                    type="password"
-                    class="form-control"
-                    formControlName="contraseña"
-                    placeholder="Ingrese la contraseña"
-                  />
-                </div>
-              </form>
+            <div class="form-group mb-3">
+              <label>Apellido *</label>
+              <input type="text" class="form-control" formControlName="apellido">
             </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-              <button type="button" class="btn btn-primary" (click)="saveUsuario()">
-                {{ editingUsuario ? 'Actualizar' : 'Crear' }}
-              </button>
+            <div class="form-group mb-3">
+              <label>Email *</label>
+              <input type="email" class="form-control" formControlName="email">
             </div>
-          </div>
+            <div class="form-group mb-3">
+              <label>Contraseña *</label>
+              <input type="password" class="form-control" formControlName="contraseña">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="saveUsuario()">{{ editingUsuario ? 'Actualizar' : 'Crear' }}</button>
         </div>
       </div>
     </div>
