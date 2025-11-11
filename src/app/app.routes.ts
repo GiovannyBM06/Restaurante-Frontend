@@ -33,7 +33,11 @@ export const routes: Routes = [
   },
   {
     path: 'orden',
-    loadComponent: () => import('./features//orden/orden-list/orden-list.component').then(m => m.OrdenListComponent),
+    loadComponent: () => import('./features/orden/orden-list/orden-list.component').then(m => m.OrdenListComponent),
+  },
+  {
+    path: 'factura',
+    loadComponent: () => import('./features/factura/factura-list/factura-list.component').then(m => m.FacturaListComponent),
   },
   {
     path: 'auth',
