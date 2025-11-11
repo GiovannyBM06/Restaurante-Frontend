@@ -40,6 +40,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/factura/factura-list/factura-list.component').then(m => m.FacturaListComponent),
   },
   {
+    path: 'reserva',
+    loadComponent: () => import('./features/reserva/reserva-list/reserva-list.component').then(m => m.ReservaListComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },

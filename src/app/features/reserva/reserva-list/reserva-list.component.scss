@@ -9,11 +9,6 @@
   color: white;
 }
 
-.badge-warning {
-  background-color: #ffc107;
-  color: #212529;
-}
-
 .badge-danger {
   background-color: #dc3545;
   color: white;
@@ -47,7 +42,7 @@
 
 .modal-dialog {
   position: relative;
-  max-width: 800px;
+  max-width: 500px;
   margin: 1.75rem auto;
   transform: translateY(-50%);
   top: 50%;
