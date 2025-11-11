@@ -1,0 +1,162 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="card-title mb-0">Gestión de Platos</h2>
+    <div class="d-flex gap-2 align-items-center">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por nombre o descripción..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrarPlatos()"
+      />
+      <select
+        class="form-control"
+        [(ngModel)]="categoriaFiltro"
+        (change)="filtrarPlatos()"
+      >
+        <option value="">Todas las categorías</option>
+        <option *ngFor="let cat of categorias" [value]="cat.id">
+          {{ cat.nombre }}
+        </option>
+      </select>
+      <button class="btn btn-success" (click)="openModal()">Nuevo Plato</button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Descripción</th>
+            <th>Registro</th>
+            <th>Actualización</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="7" class="text-center">Cargando...</td>
+          </tr>
+          <tr *ngIf="!loading && platosFiltrados.length === 0">
+            <td colspan="7" class="text-center">No hay platos</td>
+          </tr>
+
+          <tr *ngFor="let plato of paginatedPlatos">
+            <td>{{ plato.nombre }}</td>
+            <td>{{ plato.precio_unidad | number }}</td>
+            <td>{{ plato.categoria?.nombre || plato.id_categoria }}</td>
+            <td>{{ plato.descripcion || '-' }}</td>
+            <td>{{ plato.fecha_registro | date: 'short' }}</td>
+            <td>{{ plato.fecha_actualizacion | date: 'short' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="openModal(plato)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="deletePlato(plato)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination mt-3" *ngIf="totalPages > 1">
+      <button
+        class="btn btn-secondary"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+      >
+        Anterior
+      </button>
+      <span class="mx-3">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button
+        class="btn btn-secondary"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    [class.show]="showModal"
+    [style.display]="showModal ? 'block' : 'none'"
+    tabindex="-1"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ editingPlato ? 'Editar Plato' : 'Nuevo Plato' }}
+          </h5>
+          <button type="button" class="close" (click)="closeModal()">
+            <span>&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form [formGroup]="platoForm">
+            <div class="form-group mb-3">
+              <label>Nombre *</label>
+              <input class="form-control" formControlName="nombre" />
+            </div>
+
+            <div class="form-group mb-3">
+              <label>Precio Unidad *</label>
+              <input
+                type="number"
+                class="form-control"
+                formControlName="precio_unidad"
+              />
+            </div>
+
+            <div class="form-group mb-3">
+              <label>Categoría *</label>
+              <select class="form-control" formControlName="id_categoria">
+                <option value="">Seleccionar categoría</option>
+                <option *ngFor="let cat of categorias" [value]="cat.id">
+                  {{ cat.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label>Descripción</label>
+              <textarea
+                class="form-control"
+                formControlName="descripcion"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <!-- Fechas solo lectura -->
+            <div *ngIf="editingPlato" class="mt-2">
+              <p class="mb-1">
+                <strong>Fecha Registro:</strong>
+                {{ editingPlato.fecha_registro | date: 'short' }}
+              </p>
+              <p class="mb-0">
+                <strong>Última Actualización:</strong>
+                {{ editingPlato.fecha_actualizacion | date: 'short' }}
+              </p>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" (click)="savePlato()">
+            {{ editingPlato ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

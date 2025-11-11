@@ -44,6 +44,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/reserva/reserva-list/reserva-list.component').then(m => m.ReservaListComponent),
   },
   {
+    path: 'plato',
+    loadComponent: () => import('./features/plato/plato-list/plato-list.component').then(m => m.PlatoListComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
