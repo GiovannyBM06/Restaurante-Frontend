@@ -21,7 +21,8 @@ export const ROUTES: RouteInfo[] = [
   { path: '/orden', title: 'Ordenes', icon: 'shopping_box', class: '' },
   { path: '/factura', title: 'Facturas', icon: 'shopping_box', class: '' },
   { path: '/reserva', title: 'Reservas', icon: 'shopping_box', class: '' },
-  { path: '/plato', title: 'Platos', icon: 'shopping_box', class: '' }
+  { path: '/plato', title: 'Platos', icon: 'shopping_box', class: '' },
+  { path: '/platoorden', title: 'Platos-Ordenes', icon: 'shopping_box', class: '' }
 ];
 
 @Component({

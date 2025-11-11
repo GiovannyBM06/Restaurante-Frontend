@@ -1,0 +1,106 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="card-title mb-0">Gestión de Platos por Orden</h2>
+    <div class="d-flex gap-2 align-items-center">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por plato o ID de orden..."
+        [(ngModel)]="searchTerm"
+        (input)="filtrar()"
+      />
+      <button class="btn btn-success" (click)="openModal()">Agregar Plato</button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Orden</th>
+            <th>Plato</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="6" class="text-center">Cargando...</td>
+          </tr>
+          <tr *ngIf="!loading && platosOrdenFiltrados.length === 0">
+            <td colspan="6" class="text-center">No hay registros</td>
+          </tr>
+          <tr *ngFor="let item of paginatedPlatosOrden">
+            <td>{{ item.id_orden }}</td>
+            <td>{{ obtenerNombrePlato(item.id_plato) }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>{{ (item.cantidad * obtenerPrecioPlato(item.id_plato)) | currency:'COP':'symbol-narrow' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="openModal(item)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="delete(item)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination mt-3" *ngIf="totalPages > 1">
+      <button class="btn btn-secondary" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+        Anterior
+      </button>
+      <span class="mx-3">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button class="btn btn-secondary" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingItem ? 'Editar Plato en Orden' : 'Agregar Plato a Orden' }}</h5>
+          <button type="button" class="close" (click)="closeModal()"><span>&times;</span></button>
+        </div>
+
+        <div class="modal-body">
+          <form [formGroup]="form">
+            <div class="form-group mb-3">
+              <label>Orden *</label>
+              <select class="form-control" formControlName="id_orden">
+                <option value="">Seleccionar orden</option>
+                <option *ngFor="let orden of ordenes" [value]="orden.id">{{ orden.id }}</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label>Plato *</label>
+              <select class="form-control" formControlName="id_plato">
+                <option value="">Seleccionar plato</option>
+                <option *ngFor="let plato of platos" [value]="plato.id">
+                  {{ plato.nombre }} — {{ plato.precio_unidad | currency:'COP':'symbol-narrow' }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label>Cantidad *</label>
+              <input type="number" class="form-control" formControlName="cantidad" min="1" />
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="save()">
+            {{ editingItem ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

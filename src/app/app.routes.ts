@@ -48,6 +48,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/plato/plato-list/plato-list.component').then(m => m.PlatoListComponent),
   },
   {
+    path: 'platoorden',
+    loadComponent: () => import('./features/plato-orden/plato-orden-list/plato-orden-list.component').then(m => m.PlatoOrdenListComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },

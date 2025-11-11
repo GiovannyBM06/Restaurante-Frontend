@@ -28,6 +28,7 @@
       <table class="table table-striped">
         <thead>
           <tr>
+            <th>id</th>
             <th>Nombre</th>
             <th>Precio</th>
             <th>Categoría</th>
@@ -46,6 +47,7 @@
           </tr>
 
           <tr *ngFor="let plato of paginatedPlatos">
+            <td>{{ plato.id }}</td>
             <td>{{ plato.nombre }}</td>
             <td>{{ plato.precio_unidad | number }}</td>
             <td>{{ plato.categoria?.nombre || plato.id_categoria }}</td>

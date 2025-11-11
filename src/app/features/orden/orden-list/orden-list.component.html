@@ -6,7 +6,6 @@
         <select class="form-control" [(ngModel)]="estadoFiltro" (change)="filtrarOrdenes()">
             <option value="">Todos los estados</option>
             <option value="Pendiente">Pendiente</option>
-            <option value="En proceso">En proceso</option>
             <option value="Completada">Completada</option>
             <option value="Cancelada">Cancelada</option>
         </select>
@@ -69,7 +68,6 @@
             <label for="estado">Estado *</label>
             <select class="form-control" id="estado" formControlName="estado">
                 <option value="Pendiente">Pendiente</option>
-                <option value="En proceso">En proceso</option>
                 <option value="Completada">Completada</option>
                 <option value="Cancelada">Cancelada</option>
             </select>
