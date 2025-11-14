@@ -56,6 +56,7 @@ export const routes: Routes = [
   {
     path: 'plato',
     loadComponent: () => import('./features/plato/plato-list/plato-list.component').then(m => m.PlatoListComponent),
+    canActivate: [AuthGuard]
   },
   {
     path: 'platoorden',
