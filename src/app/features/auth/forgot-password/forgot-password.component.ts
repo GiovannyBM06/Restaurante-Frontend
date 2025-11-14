@@ -13,7 +13,7 @@ import { NotificationService } from '../../../core/services/notification.service
       <div class="forgot-password-card">
         <div class="card">
           <div class="card-header text-center">
-            <h2 class="card-title">Recuperar Contraseña</h2>
+            <h2 class="card-title">Recuperar Contrasena</h2>
             <p class="text-muted">Ingresa tu email para recibir instrucciones de recuperación</p>
           </div>
           
@@ -118,7 +118,7 @@ export class ForgotPasswordComponent implements OnInit {
 
     this.loading = true;
     
-    // TODO: Implementar servicio para recuperar contraseña
+    // TODO: Implementar servicio para recuperar contrasena
     // Por ahora solo simulamos el envío
     setTimeout(() => {
       this.notificationService.showSuccess('Se han enviado las instrucciones a tu email');

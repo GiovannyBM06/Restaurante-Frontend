@@ -6,7 +6,7 @@
               <i class="now-ui-icons ui-1_lock-circle-open"></i>
             </div>
             <h2 class="card-title text-title-contrast">Iniciar Sesión</h2>
-            <p class="login-subtitle text-high-contrast">Accede a tu cuenta para continuar</p>
+            <p class="login-subtitle text-high-contrast">Accede a tu cuenta para continuar tener acceso completo</p>
           </div>
           
           <div class="card-body">
@@ -16,21 +16,20 @@
                   <span class="label-icon">
                     <i class="now-ui-icons users_single-02"></i>
                   </span>
-                  Usuario
+                  Email
                 </label>
                 <input 
                   type="text" 
                   id="email"
                   class="form-control" 
-                  [(ngModel)]="loginData.nombre_usuario"
-                  name="nombre_usuario"
+                  [(ngModel)]="loginData.email"
+                  name="Coerreo"
                   required
-                  placeholder="admin"
                   #email="ngModel"
                   [class.is-invalid]="email.invalid && email.touched"
                 >
                 <div class="invalid-feedback" *ngIf="email.invalid && email.touched">
-                  <div *ngIf="email.errors?.['required']">El usuario es requerido</div>
+                  <div *ngIf="email.errors?.['required']">El correo es requerido</div>
                 </div>
               </div>
 
@@ -48,14 +47,13 @@
                   [(ngModel)]="loginData.contrasena"
                   name="contrasena"
                   required
-                  minlength="6"
-                  placeholder="admin123"
+                  minlength="4"
                   #password="ngModel"
                   [class.is-invalid]="password.invalid && password.touched"
                 >
                 <div class="invalid-feedback" *ngIf="password.invalid && password.touched">
                   <div *ngIf="password.errors?.['required']">La contraseña es requerida</div>
-                  <div *ngIf="password.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</div>
+                  <div *ngIf="password.errors?.['minlength']">La contraseña debe tener al menos 4 caracteres</div>
                 </div>
               </div>
 
@@ -77,36 +75,6 @@
                 </button>
               </div>
 
-              <!-- Credenciales de prueba -->
-              <div class="demo-credentials">
-                <div class="demo-header">
-                  <span class="demo-icon">
-                    <i class="now-ui-icons objects_support-17"></i>
-                  </span>
-                  <strong>Credenciales de Prueba</strong>
-                </div>
-                <div class="demo-info">
-                  <div class="credential-group">
-                    <h4>
-                      <i class="now-ui-icons users_single-02"></i>
-                      Administrador
-                    </h4>
-                    <p><strong>Usuario:</strong> admin</p>
-                    <p><strong>Contraseña:</strong> admin123</p>
-                    <p class="role-info">Acceso completo a todas las funcionalidades</p>
-                  </div>
-                  <div class="credential-group">
-                    <h4>
-                      <i class="now-ui-icons shopping_bag-16"></i>
-                      Consumidor
-                    </h4>
-                    <p><strong>Usuario:</strong> consumidor</p>
-                    <p><strong>Contraseña:</strong> consumidor123</p>
-                    <p class="role-info">Solo puede ver productos</p>
-                  </div>
-                </div>
-              </div>
-
               <div class="form-options">
                 <div class="text-center">
                   <a routerLink="/auth/forgot-password" class="link">
@@ -114,16 +82,6 @@
                       <i class="now-ui-icons ui-1_lock-circle-open"></i>
                     </span>
                     ¿Olvidaste tu contraseña?
-                  </a>
-                </div>
-
-                <div class="text-center">
-                  <span class="register-text">¿No tienes cuenta? </span>
-                  <a routerLink="/auth/register" class="link">
-                    <span class="link-icon">
-                      <i class="now-ui-icons ui-1_simple-add"></i>
-                    </span>
-                    Regístrate aquí
                   </a>
                 </div>
               </div>
