@@ -1,0 +1,101 @@
+<div class="categoria-list">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Gestión de Clientes</h2>
+      <div class="d-flex gap-2">
+        <input type="text" class="form-control" placeholder="Buscar por nombre..." [(ngModel)]="searchTerm" (input)="filtrarClientes()">
+        <button class="btn btn-success" (click)="openModal()">Nuevo Cliente</button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Fecha Registro</th>
+              <th>Última Actualización</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="loading">
+              <td colspan="8" class="text-center">Cargando...</td>
+            </tr>
+            <tr *ngIf="!loading && paginatedClientes.length === 0">
+              <td colspan="8" class="text-center">No hay clientes disponibles</td>
+            </tr>
+            <tr *ngFor="let cliente of paginatedClientes">
+              <td>{{ cliente.id }}</td>
+              <td>{{ cliente.nombre }}</td>
+              <td>{{ cliente.apellido }}</td>
+              <td>{{ cliente.Email }}</td>
+              <td>{{ cliente.telefono }}</td>
+              <td>{{ cliente.fecha_registro | date:'short' }}</td>
+              <td>{{ cliente.fecha_actualizacion ? (cliente.fecha_actualizacion | date:'short') : '-' }}</td>
+              <td>
+                <button class="btn btn-sm btn-primary me-1" (click)="openModal(cliente)">Editar</button>
+                <button class="btn btn-sm btn-danger" (click)="deleteCliente(cliente)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 🔹 Paginación -->
+      <div class="pagination mt-3" *ngIf="totalPages > 1">
+        <button class="btn btn-secondary" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
+        <span class="mx-3">Página {{ currentPage }} de {{ totalPages }}</span>
+        <button class="btn btn-secondary" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Siguiente</button>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">{{ editingCliente ? 'Editar Cliente' : 'Nuevo Cliente' }}</h5>
+              <button type="button" class="close" (click)="closeModal()">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form [formGroup]="clienteForm" (ngSubmit)="saveCliente()">
+                <div class="form-group mb-3">
+                  <label for="nombre">Nombre *</label>
+                  <input type="text" class="form-control" id="nombre" formControlName="nombre" placeholder="Ingrese el nombre">
+                </div>
+
+                <div class="form-group mb-3">
+                  <label for="apellido">Apellido *</label>
+                  <input type="text" class="form-control" id="apellido" formControlName="apellido" placeholder="Ingrese el apellido">
+                </div>
+
+                <div class="form-group mb-3">
+                  <label for="email">Email *</label>
+                  <input type="email" class="form-control" id="email" formControlName="email" placeholder="Ingrese el correo">
+                </div>
+
+                <div class="form-group mb-3">
+                  <label for="telefono">Teléfono *</label>
+                  <input type="text" class="form-control" id="telefono" formControlName="telefono" placeholder="Ingrese el teléfono">
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+              <button class="btn btn-primary" (click)="saveCliente()">
+                {{ editingCliente ? 'Actualizar' : 'Crear' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
