@@ -1,0 +1,96 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h2 class="card-title mb-0">Gestión de Facturas</h2>
+    <div class="d-flex gap-2 align-items-center">
+      <input type="text" class="form-control" placeholder="Buscar por ID o número de orden..." [(ngModel)]="searchTerm" (input)="filtrarFacturas()">
+      <select class="form-control" [(ngModel)]="metodoPagoFiltro" (change)="filtrarFacturas()">
+        <option value="">Todos los métodos</option>
+        <option *ngFor="let metodo of metodosPago" [value]="metodo">{{ metodo }}</option>
+      </select>
+      <button class="btn btn-success" (click)="openModal()">Nueva Factura</button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Total</th>
+            <th>Método de Pago</th>
+            <th>Orden</th>
+            <th>Fecha Registro</th>
+            <th>Última Actualización</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading"><td colspan="7" class="text-center">Cargando...</td></tr>
+          <tr *ngIf="!loading && facturasFiltradas.length === 0"><td colspan="7" class="text-center">No hay facturas</td></tr>
+          <tr *ngFor="let factura of paginatedFacturas">
+            <td>{{ factura.id }}</td>
+            <td>{{ factura.total | currency }}</td>
+            <td>{{ factura.metodo_pago }}</td>
+            <td>{{ factura.id_orden }}</td>
+            <td>{{ factura.fecha_registro | date:'short' }}</td>
+            <td>{{ factura.fecha_actualizacion ? (factura.fecha_actualizacion | date:'short') : '-' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" (click)="openModal(factura)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteFactura(factura)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination mt-3" *ngIf="totalPages > 1">
+      <button class="btn btn-secondary" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
+      <span class="mx-3">Página {{ currentPage }} de {{ totalPages }}</span>
+      <button class="btn btn-secondary" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editingFactura ? 'Editar Factura' : 'Nueva Factura' }}</h5>
+          <button type="button" class="close" (click)="closeModal()"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="facturaForm">
+            <div class="form-group mb-3">
+              <label for="total">Total *</label>
+              <input type="number" id="total" class="form-control" formControlName="total" placeholder="Ingrese el total">
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="metodo_pago">Método de Pago *</label>
+              <select class="form-control" id="metodo_pago" formControlName="metodo_pago">
+                <option value="">Seleccionar método</option>
+                <option *ngFor="let metodo of metodosPago" [value]="metodo">{{ metodo }}</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="orden">Orden *</label>
+              <select class="form-control" id="orden" formControlName="id_orden">
+                <option value="">Seleccionar orden</option>
+                <option *ngFor="let orden of ordenes" [value]="orden.id">
+                  {{ orden.id }} (Estado: {{ orden.estado }})
+                </option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="saveFactura()">{{ editingFactura ? 'Actualizar' : 'Crear' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
