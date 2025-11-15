@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { Categoria } from '../../../shared/models/categoria.model';
 
@@ -21,9 +21,8 @@ export class CategoriaListComponent implements OnInit {
   editingCategoria: Categoria | null = null;
   searchTerm = '';
 
-  // 🔹 Paginación
   currentPage = 1;
-  pageSize = 5; // cantidad de categorías por página
+  pageSize = 5;
   totalPages = 1;
 
   constructor(

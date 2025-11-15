@@ -14,7 +14,7 @@ import { RouterModule } from '@angular/router';
           <div class="card-body text-center">
             <div class="welcome-icon"></div>
             <h1 class="welcome-title text-title-contrast">¡Bienvenido al Sistema!</h1>
-            <p class="welcome-subtitle text-high-contrast">Sistema de gestión con arquitectura limpia y diseño moderno</p>
+            <p class="welcome-subtitle text-high-contrast">Sistema de gestión de Restaurante</p>
           </div>
         </div>
       </div>
@@ -26,14 +26,8 @@ import { RouterModule } from '@angular/router';
             <div class="card-body text-center">
               <div class="module-icon">📁</div>
               <h3 class="module-title">Categorías</h3>
-              <p class="module-description">Gestiona las categorías de productos de manera eficiente</p>
-              <div class="module-features">
-                <span class="feature-tag">CRUD</span>
-                <span class="feature-tag">Validación</span>
-                <span class="feature-tag">API</span>
-              </div>
-              <a routerLink="/categorias" class="btn btn-primary btn-lg">
-                <span class="btn-icon">🚀</span>
+              <p class="module-description">Gestiona las categorías de lo platos</p>
+              <a routerLink="/categoria" class="btn btn-primary btn-lg">
                 Ver Categorías
               </a>
             </div>
@@ -45,14 +39,8 @@ import { RouterModule } from '@angular/router';
             <div class="card-body text-center">
               <div class="module-icon">👥</div>
               <h3 class="module-title">Usuarios</h3>
-              <p class="module-description">Administra los usuarios del sistema con seguridad</p>
-              <div class="module-features">
-                <span class="feature-tag">Autenticación</span>
-                <span class="feature-tag">Roles</span>
-                <span class="feature-tag">Seguridad</span>
-              </div>
+              <p class="module-description">Administra los usuarios del sistema</p>
               <a routerLink="/usuarios" class="btn btn-primary btn-lg">
-                <span class="btn-icon">👤</span>
                 Ver Usuarios
               </a>
             </div>
@@ -62,47 +50,51 @@ import { RouterModule } from '@angular/router';
         <div class="module-card slide-in-up" style="animation-delay: 0.3s">
           <div class="card">
             <div class="card-body text-center">
-              <div class="module-icon">📊</div>
-              <h3 class="module-title">Analytics</h3>
-              <p class="module-description">Visualiza estadísticas y métricas del sistema</p>
-              <div class="module-features">
-                <span class="feature-tag">Gráficos</span>
-                <span class="feature-tag">Reportes</span>
-                <span class="feature-tag">Dashboard</span>
-              </div>
-              <button class="btn btn-outline btn-lg" disabled>
-                <span class="btn-icon">📈</span>
-                Próximamente
-              </button>
+              <div class="module-icon">🍽️</div>
+              <h3 class="module-title">Platos</h3>
+              <p class="module-description">Visualiza los platos del sistema</p>
+              <a routerLink="/plato" class="btn btn-primary btn-lg">
+                Ver Platos
+              </a>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <div class="card glass">
-          <div class="card-header">
-            <h3 class="card-title">Acciones Rápidas</h3>
+        <div class="module-card slide-in-up" style="animation-delay: 0.3s">
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="module-icon">🧔🏻‍♂️</div>
+              <h3 class="module-title">Clientes</h3>
+              <p class="module-description">Visualiza los clientes del sistema</p>
+              <a routerLink="/cliente" class="btn btn-primary btn-lg">
+                Ver Clientes
+              </a>
+            </div>
           </div>
-          <div class="card-body">
-            <div class="actions-grid">
-              <button class="action-btn">
-                <span class="action-icon">➕</span>
-                <span class="action-text">Nueva Categoría</span>
-              </button>
-              <button class="action-btn">
-                <span class="action-icon">👤</span>
-                <span class="action-text">Nuevo Usuario</span>
-              </button>
-              <button class="action-btn">
-                <span class="action-icon">📊</span>
-                <span class="action-text">Ver Reportes</span>
-              </button>
-              <button class="action-btn">
-                <span class="action-icon">⚙️</span>
-                <span class="action-text">Configuración</span>
-              </button>
+        </div>
+
+        <div class="module-card slide-in-up" style="animation-delay: 0.3s">
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="module-icon">🧑🏻‍🍳</div>
+              <h3 class="module-title">Empleados</h3>
+              <p class="module-description">Visualiza los empleados</p>
+              <a routerLink="/empleado" class="btn btn-primary btn-lg">
+                Ver Empleados
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-card slide-in-up" style="animation-delay: 0.3s">
+          <div class="card">
+            <div class="card-body text-center">
+              <div class="module-icon">🪑</div>
+              <h3 class="module-title">Mesas</h3>
+              <p class="module-description">Visualiza las mesas del restaurante</p>
+              <a routerLink="/mesa" class="btn btn-primary btn-lg">
+                Ver Mesas
+              </a>
             </div>
           </div>
         </div>
@@ -116,6 +108,9 @@ import { RouterModule } from '@angular/router';
 
     .welcome-section {
       margin-bottom: 3rem;
+      color: black;
+      background-color: rgba(161, 161, 161, 1); 
+      border-radius: 0;
     }
 
     .welcome-icon {
@@ -125,6 +120,7 @@ import { RouterModule } from '@angular/router';
     }
 
     .welcome-title {
+      color: rgba(0, 0, 0, 0.95);
       font-size: 2.5rem;
       font-weight: 800;
       margin-bottom: 0.5rem;
@@ -132,10 +128,9 @@ import { RouterModule } from '@angular/router';
 
     .welcome-subtitle {
       font-size: 1.125rem;
-      color: rgba(255, 255, 255, 0.95);
+      color: rgba(0, 0, 0, 0.95);
       margin-bottom: 0;
       font-weight: 500;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
 
