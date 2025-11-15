@@ -38,7 +38,7 @@ import { NotificationService } from '../../../core/services/notification.service
     }
 
     .login-subtitle {
-      color: #2c3e50;
+      color: #000000;
       font-size: 1rem;
       margin-bottom: 0;
       font-weight: 500;
@@ -123,79 +123,6 @@ import { NotificationService } from '../../../core/services/notification.service
       margin-right: 0.25rem;
     }
 
-    .demo-credentials {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: var(--radius-md);
-      padding: 1rem;
-      margin: 1.5rem 0;
-      text-align: center;
-    }
-
-    .demo-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 0.75rem;
-      color: var(--primary-color);
-      font-size: 0.875rem;
-    }
-
-    .demo-icon {
-      font-size: 1.125rem;
-    }
-
-    .demo-icon i {
-      font-size: 1.125rem;
-      color: var(--primary-color);
-    }
-
-    .demo-info {
-      color: #2c3e50;
-      font-size: 0.875rem;
-      line-height: 1.5;
-    }
-
-    .demo-info p {
-      margin: 0.25rem 0;
-    }
-
-    .credential-group {
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .credential-group:last-child {
-      margin-bottom: 0;
-    }
-
-    .credential-group h4 {
-      margin: 0 0 0.75rem 0;
-      color: var(--primary-color);
-      font-size: 1rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .credential-group h4 i {
-      font-size: 1rem;
-      color: var(--primary-color);
-    }
-
-    .role-info {
-      font-style: italic;
-      color: #7f8c8d;
-      font-size: 0.8rem;
-      margin-top: 0.5rem !important;
-    }
-
-
     @keyframes pulse {
       0% {
         transform: scale(1);
@@ -252,7 +179,7 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-
+    this.notificationService.showSuccess('Inicio de sesión exitoso');
   }
 
   onSubmit(): void {
