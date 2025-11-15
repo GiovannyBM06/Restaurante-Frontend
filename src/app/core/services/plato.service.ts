@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Plato } from '../../shared/models/plato.model';
 
@@ -7,7 +7,7 @@ import { Plato } from '../../shared/models/plato.model';
   providedIn: 'root',
 })
 export class PlatoService {
-  private apiUrl = 'http://localhost:4000/platos'; // ajusta si tu backend corre en otro puerto
+  private apiUrl = 'http://localhost:4000/platos';
 
   constructor(private http: HttpClient) {}
 
